@@ -61,11 +61,11 @@ bool accessiblePaper(std::vector<std::vector<char>>& grid, int row, int col) {
         if (grid[row - 1][col - 1] == '@') {adj++;}
     }
     if (adj < 4) {
-        std::cout << row << "/" << col << std::endl;
         return true;
     } 
     return false;
 }
+
 
 int main() {
     
@@ -75,9 +75,31 @@ int main() {
 
     for (int row = 0; row < grid.size(); row++) {
         for (int col = 0; col < grid[row].size(); col++) {
-            if (accessiblePaper(grid, row, col)) {part1++;}
+            if (accessiblePaper(grid, row, col)) {
+                part1++;
+            }
         }
-    } 
+    }
     std::cout << "Part 1: " << part1 << std::endl;
+
+    int part2{0};
+    while (true) {
+        std::vector<std::tuple<int, int>> removables; 
+        for (int row = 0; row < grid.size(); row++) {
+            for (int col = 0; col < grid[row].size(); col++) {
+                if (accessiblePaper(grid, row, col)) {
+                    removables.push_back({row, col});
+                }
+            }
+        }
+        // replace things
+        for (auto& t: removables) {
+            grid[std::get<0>(t)][std::get<1>(t)] = '.';
+        } 
+        if (removables.size() == 0) {break;}
+        part2 += removables.size();
+    }
+
+    std::cout << "Part 2: " << part2 << std::endl;
     return 0;
 }
