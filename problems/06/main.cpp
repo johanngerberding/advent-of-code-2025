@@ -3,10 +3,11 @@
 #include <vector>
 #include <string> 
 #include <sstream>
+#include <algorithm> 
 
 
 int main() {
-    std::string filename = "input_test.txt";
+    std::string filename = "input.txt";
     std::ifstream file(filename);
     std::string line;
     std::vector<std::vector<int>> grid;
@@ -56,10 +57,6 @@ int main() {
 
     std::cout << "Part 1: " << result << std::endl;
 
-    long long part2;    
-    // i have to parse the shit in a new way, including spaces so that I 
-    // can see which numbers align, this will be hard 
-    
     std::ifstream file2(filename); 
     std::vector<std::string> input;  // Each string is a row
     while(std::getline(file2, line)) {
@@ -87,12 +84,13 @@ int main() {
         std::cout << s << std::endl;
     }
 
+    std::cout << "columns:" << std::endl;
     std::vector<std::vector<std::string>> columns; 
-    int last_idx {0};
+    int last_idx {-1};
     for (int s: separator_idxs) {
         std::vector<std::string> column;
         for (std::string line: input) {
-            column.push_back(line.substr(last_idx, s - last_idx));
+            column.push_back(line.substr(last_idx + 1, s - last_idx));
         }
         for (std::string r: column) {
             std::cout << r << std::endl;
@@ -103,13 +101,55 @@ int main() {
 
     std::vector<std::string> column;
     for (std::string line: input) {
-        column.push_back(line.substr(last_idx));
+        column.push_back(line.substr(last_idx + 1));
     }
     for (std::string r: column) {
         std::cout << r << std::endl;
     }
     columns.push_back(column);
 
+    long long part2 {0};
+    for (std::vector<std::string> col: columns) {
+        std::string last = col.back();
+        col.pop_back();
+        char op; 
+        int col_result;
+        if (std::find(last.begin(), last.end(), '+') != last.end()) {
+            op = '+';
+            col_result = 0;
+        } else if (std::find(last.begin(), last.end(), '*') != last.end()) {
+            op = '*';
+            col_result = 1;
+        } else {
+            std::cout << "there is something wrong with the last column";
+        }
+        std::cout << "Operand: " << op << std::endl;
+
+        int value;
+        for (int i = col[0].length() - 1; i >= 0; i--) {
+            std::string str_value; 
+            for (std::string row: col) {
+                str_value += row[i];
+            }
+            
+            if (str_value.find_first_not_of(' ') == std::string::npos) {
+                continue;
+            } else {
+                std::cout << "STR VALUE: " << str_value << std::endl;
+                value = std::stoi(str_value); 
+                if (op == '*') {
+                    col_result *= value;
+                } else if (op == '+') {
+                    col_result += value;
+                }
+            } 
+
+        }
+        std::cout << "COL RESULT: " << col_result << std::endl;
+        part2 += col_result;
+    }
+
+    std::cout << "PART 2: " << part2 << std::endl;
     file2.close();
 
     return 0;
