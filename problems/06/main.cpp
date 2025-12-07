@@ -6,7 +6,7 @@
 
 
 int main() {
-    std::string filename = "input.txt";
+    std::string filename = "input_test.txt";
     std::ifstream file(filename);
     std::string line;
     std::vector<std::vector<int>> grid;
@@ -33,16 +33,7 @@ int main() {
         symbols.push_back(symbol);
     }
     file.close();
-    // for (char c: symbols) {
-    //     std::cout << c << " ";
-    // }
-    // std::cout << std::endl;
-    // for (std::vector<int> vec: grid) {
-    //     for (int n: vec) {
-    //         std::cout << n << " ";
-    //     } 
-    //     std::cout << std::endl;
-    // }
+    
     long long result {0};
     char operand;
     for (int col = 0; col < symbols.size(); col++) {
@@ -62,6 +53,64 @@ int main() {
         }
         result += line_result;
     }
+
     std::cout << "Part 1: " << result << std::endl;
+
+    long long part2;    
+    // i have to parse the shit in a new way, including spaces so that I 
+    // can see which numbers align, this will be hard 
+    
+    std::ifstream file2(filename); 
+    std::vector<std::string> input;  // Each string is a row
+    while(std::getline(file2, line)) {
+        input.push_back(line);
+    } 
+    
+    int num_cols = input[0].length();   
+    std::vector<int> separator_idxs; 
+
+    for (int col = 0; col < num_cols; col++) {
+        bool all_spaces = true;
+        for (int row = 0; row < input.size(); row++) {
+            if (input[row][col] != ' ') {
+                all_spaces = false;
+                break;
+            } 
+        }
+        if (all_spaces) {
+            separator_idxs.push_back(col);
+        }
+    }
+
+    std::cout << "Separator col idxs:" << std::endl;
+    for (int s: separator_idxs) {
+        std::cout << s << std::endl;
+    }
+
+    std::vector<std::vector<std::string>> columns; 
+    int last_idx {0};
+    for (int s: separator_idxs) {
+        std::vector<std::string> column;
+        for (std::string line: input) {
+            column.push_back(line.substr(last_idx, s - last_idx));
+        }
+        for (std::string r: column) {
+            std::cout << r << std::endl;
+        }
+        columns.push_back(column);
+        last_idx = s;
+    }
+
+    std::vector<std::string> column;
+    for (std::string line: input) {
+        column.push_back(line.substr(last_idx));
+    }
+    for (std::string r: column) {
+        std::cout << r << std::endl;
+    }
+    columns.push_back(column);
+
+    file2.close();
+
     return 0;
 }
