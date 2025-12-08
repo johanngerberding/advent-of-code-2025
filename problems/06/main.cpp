@@ -113,7 +113,7 @@ int main() {
         std::string last = col.back();
         col.pop_back();
         char op; 
-        int col_result;
+        long long col_result;
         if (std::find(last.begin(), last.end(), '+') != last.end()) {
             op = '+';
             col_result = 0;
