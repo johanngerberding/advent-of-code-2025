@@ -3,10 +3,10 @@
 #include <vector> 
 #include <iostream> 
 #include <set> 
-
+#include <map>
 
 int main() {
-    std::string filename = "input_test.txt";
+    std::string filename = "input.txt";
     std::ifstream file(filename);
     std::string line;
     std::vector<std::string> lines;  
@@ -15,73 +15,50 @@ int main() {
     }
     file.close();
 
-    std::set<int> indexes;
-    int splits {0};
+    // Track how many paths end at each index
+    std::map<int, long long> position_paths;
+    int splits = 0;
 
-    std::vector<int> path;
-    std::set<std::vector<int>> paths;
-
-    for (std::string l: lines) {
-        if (indexes.empty()) {
+    for (const std::string& l: lines) {
+        if (position_paths.empty()) {
             int idx = static_cast<int>(l.find('S'));
-            indexes.insert(idx);
-            path.push_back(idx);
-            paths.insert(path);
+            position_paths[idx] = 1;
         }
         
-        size_t pos {0}; 
+        // Find all splitters in current line
         std::set<int> splitters;
+        size_t pos = 0;
         while ((pos = l.find('^', pos)) != std::string::npos) {
             splitters.insert(static_cast<int>(pos));
             pos++;
         }
 
-        std::cout << "--------" << std::endl;
-        for (std::vector<int> p: paths) {
-            for (int i: p) {
-                std::cout << i << " ";
-            }
-            std::cout << std::endl;
-        }
-    
-
-        std::set<int> new_indexes;  
-        std::set<std::vector<int>> new_paths;
+        std::map<int, long long> new_position_paths;
         
-        for (int sp: splitters) {
-            int left;
-            int right;
-            if (indexes.find(sp) != indexes.end()) {
-                left = sp - 1;
-                right = sp + 1;
-                indexes.erase(sp);
-                new_indexes.insert(left);
-                new_indexes.insert(right);
+        for (const auto& [idx, count] : position_paths) {
+            if (splitters.find(idx) != splitters.end()) {
+                // This position splits
+                int left = idx - 1;
+                int right = idx + 1;
+                new_position_paths[left] += count;
+                new_position_paths[right] += count;
                 splits++;
-                for (std::vector<int> p: paths) {
-                    if (p.back() == sp) {
-                        std::cout << p.back() << " == " << sp << std::endl;
-                        std::vector<int> new_right(p);
-                        std::vector<int> new_left(p);
-                        new_right.push_back(right);
-                        new_left.push_back(left);
-                        new_paths.insert(new_right);
-                        new_paths.insert(new_left);
-                    }
-                }
+            } else {
+                // This position doesn't split, carry forward
+                new_position_paths[idx] += count;
             }
         }
+        
+        position_paths = std::move(new_position_paths);
+    }
 
-        if (!new_paths.empty()) {
-            paths = new_paths;
-        }
-
-        if (!new_indexes.empty()) {
-            indexes.insert(new_indexes.begin(), new_indexes.end());
-        }
+    long long total_paths = 0;
+    for (const auto& [idx, count] : position_paths) {
+        std::cout << idx << " - " << count << std::endl;
+        total_paths += count;
     }
 
     std::cout << "Part 1: " << splits << std::endl;
-    std::cout << "Part 2: " << paths.size() << std::endl;
+    std::cout << "Part 2: " << total_paths << std::endl;
     return 0;
 }
